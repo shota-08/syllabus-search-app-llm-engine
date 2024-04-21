@@ -32,6 +32,6 @@ collection = client.create_collection(name=collection_name)
 collection.add(
     documents = texts,
     embeddings = embeddings,
-    metadatas = [{"title": s, "url": l, "teacher":m } for s, l, m in zip(titles, urls, teachers)],
+    metadatas = [{"title": s, "url": l, "teacher": m } for s, l, m in zip(titles, urls, teachers)],
     ids=[str(uuid.uuid1()) for _ in texts]
 )

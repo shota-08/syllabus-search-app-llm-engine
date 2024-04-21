@@ -31,6 +31,7 @@ if query:
     docs = db.similarity_search(query, k=2)
     answer_meta = docs[0].metadata
     answer_title = answer_meta['title']
+    answer_url = answer_meta['url']
     answer_content = docs[0].page_content
     answer = get_llm_answer(query, answer_title, answer_content)
 
@@ -44,10 +45,10 @@ if query:
         st.write(query)
 
     with st.chat_message(ASSISTANT_NAME):
-        st.write(answer)
+        st.write(answer + f"[{answer_title}]({answer_url})")
 
-    with st.chat_message(ASSISTANT_NAME):
-        st.write(answer_title)
+    # with st.chat_message(ASSISTANT_NAME):
+    #     st.write(answer_title)
 
     # data表示
     with st.expander('docs', expanded=False):
