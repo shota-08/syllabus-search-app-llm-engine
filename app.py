@@ -45,7 +45,7 @@ if query:
         st.write(query)
 
     with st.chat_message(ASSISTANT_NAME):
-        st.write(answer + f"[{answer_title}]({answer_url})")
+        st.write(answer)
 
     # with st.chat_message(ASSISTANT_NAME):
     #     st.write(answer_title)

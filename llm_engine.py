@@ -1,10 +1,30 @@
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
+from langchain.memory import ChatMessageHistory
+from langchain.chains import LLMChain
+from typing import List
+from pydantic import BaseModel, Field
+from langchain.schema import AIMessage, BaseMessage, HumanMessage
 from dotenv import load_dotenv
 load_dotenv()  # read local .env file
 
+# 会話履歴クラス
+class ChatMessageHistory(BaseModel):
+    messages: List[BaseMessage] = Field(default_factory=list)
+
+    def add_user_message(self, message: str) -> None:
+        self.messages.append(HumanMessage(content=message))
+
+    def add_ai_message(self, message: str) -> None:
+        self.messages.append(AIMessage(content=message))
+
+    def clear(self) -> None:
+        self.messages = []
+
 # LLMモデルの設定
 llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+history = ChatMessageHistory()
 
 def get_llm_summary(text):
     prompt_template = """
@@ -30,9 +50,9 @@ def get_llm_summary(text):
 def pass_text(query, title, text):
     query_with_text = f"""
     # 命令
-    あなたは進路相談のアドバイザーです。
-    学生の問い合わせに親切に回答してください。そして講座名と講座概要を参照しながら、おすすめの講座を簡潔に紹介してください。
-    学生の問い合わせが、講座名と講座概要と関連性が無い場合、講座の紹介はしないでください。
+    あなたは履修相談のアドバイザーです。
+    学生の問い合わせに親切に回答する過程で、講座名と講座概要を参照しながら、おすすめの講座を簡潔に紹介してください。
+    学生の問い合わせに対して、なぜその講座をお勧めしたか理由を明確に伝えてください。
     一度大きく深呼吸をしてステップバイステップで考えてください。
 
     # 制約条件:
@@ -42,6 +62,7 @@ def pass_text(query, title, text):
     ・単位取得の情報、欠席の情報、履修条件の情報は説明に含めてはいけない
     ・会話が続くように、文章の最後に「他にどんなことを学びたいですか？」など付けること
     ・100文字以内で簡潔に答える
+    ・学生との直前の会話を参照すること
 
     # 講座名:
     {title}
@@ -51,15 +72,37 @@ def pass_text(query, title, text):
 
     # 学生の問い合わせ:
     {query}
+
+    # 直前の会話
     """
     return query_with_text
 
 def get_llm_answer(query, title, text):
+    query_with_text = pass_text(query, title, text)
+    template = query_with_text + "\n{chat_history}"
+
     prompt = PromptTemplate(
         template = "{template}",
         input_variables = ["template"]
     )
-    query_with_text = pass_text(query, title, text)
-    chain = prompt | llm
-    answer = chain.invoke({"template": query_with_text})
-    return answer.content
+
+    memory = ConversationBufferMemory(memory_key="chat_history")
+    conversation = LLMChain(
+    llm=llm,
+    prompt=prompt,
+    memory=memory,
+    verbose=True,
+    )
+    answer = conversation.invoke({"template": template, "chat_history": history})
+
+    history.add_user_message(query)
+    history.add_ai_message(answer["text"])
+
+    # prompt = PromptTemplate(
+    #     template = "{template}",
+    #     input_variables = ["template"]
+    # )
+    # query_with_text = pass_text(query, title, text)
+    # chain = prompt | llm
+    # answer = chain.invoke({"template": query_with_text})
+    return answer
