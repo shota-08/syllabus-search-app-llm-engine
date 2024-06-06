@@ -4,7 +4,7 @@ from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
 load_dotenv()
 
-from llm_engine import get_llm_answer
+from llm_engine import get_llm_answer, get_as_retriever_answer
 
 st.set_page_config(page_title='Langchain x syllabus')
 st.title('Langchain x syllabus')
@@ -28,12 +28,14 @@ if "chat_log" not in st.session_state:
     st.session_state.chat_log = []
 
 if query:
-    docs = db.similarity_search(query, k=2)
-    answer_meta = docs[0].metadata
-    answer_title = answer_meta['title']
-    answer_url = answer_meta['url']
-    answer_content = docs[0].page_content
-    answer = get_llm_answer(query, answer_title, answer_content)
+    docs = get_as_retriever_answer(query, db)
+    answer = docs["result"]
+    # docs = db.similarity_search(query, k=2)
+    # answer_meta = docs[0].metadata
+    # answer_title = answer_meta['title']
+    # answer_url = answer_meta['url']
+    # answer_content = docs[0].page_content
+    # answer = get_llm_answer(query, answer_title, answer_content)
 
     # ログの表示
     for chat in st.session_state.chat_log:
@@ -45,7 +47,8 @@ if query:
         st.write(query)
 
     with st.chat_message(ASSISTANT_NAME):
-        st.write(answer + f"[{answer_title}]({answer_url})")
+        st.write(answer)
+        # st.write(answer + f"[{answer_title}]({answer_url})")
 
     # with st.chat_message(ASSISTANT_NAME):
     #     st.write(answer_title)
