@@ -1,0 +1,8 @@
+# pandas
+# openai
+# langchain
+# chromadb
+# streamlit
+# langchain-openai
+# ipykernel
+# openpyxl
