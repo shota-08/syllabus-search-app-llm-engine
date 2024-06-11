@@ -45,4 +45,4 @@ collection.add(
 )
 
 # 確認用
-df.to_csv("./csv/kokubun_llm.csv", index=False)
+# df.to_csv("./csv/kokubun_llm.csv", index=False)
