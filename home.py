@@ -4,7 +4,7 @@ from langchain_community.vectorstores import Chroma
 from dotenv import load_dotenv
 load_dotenv()
 
-from llm_engine import get_llm_answer, get_as_retriever_answer
+from llm_engine import get_as_retriever_answer
 
 st.set_page_config(page_title='Langchain x syllabus')
 st.title('Langchain x syllabus')
@@ -48,6 +48,7 @@ if query:
         st.write(f"- [{source_documents[1].metadata['title']}]({source_documents[1].metadata['url']})")
         st.write(f"- [{source_documents[2].metadata['title']}]({source_documents[2].metadata['url']})")
         st.write(f"- [{source_documents[3].metadata['title']}]({source_documents[3].metadata['url']})")
+        st.write()
 
     # data表示
     with st.expander('docs', expanded=False):
