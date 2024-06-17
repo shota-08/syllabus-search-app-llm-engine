@@ -1,59 +1,52 @@
 import streamlit as st
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
-from dotenv import load_dotenv
-load_dotenv()
 
-from llm_engine import get_as_retriever_answer
+import warnings
+warnings.filterwarnings('ignore')
 
-st.set_page_config(page_title='Langchain x syllabus')
-st.title('Langchain x syllabus')
+def init_page():
+    st.set_page_config(
+        page_title="Langchain x 同志社シラバス"
+    )
+    st.title("syllabus search")
+    st.info(
+        """
+        👈 興味のある学科を選択してください！
+        """
+    )
+    st.write(
+        """
+        ### 国文学科
+        - 国文学科は、古代から現代に至る幅広い時代の知の結晶である日本文学と日本語について、実証的かつ理論的に探
+        求し、日本文化についての理解を深めることをとおして、精緻な読解力、卓越した自己表現力、知識や情報の創造的
+        な運用能力を備えた、世界と真に対話できる総合的な人間力を身につけて、教育界、マスコミ・出版界をはじめとす
+        る、広範な分野で社会に貢献し、国際化にも対応できる人物を養成することを目的とする。
 
-# 初期化
-embedding = OpenAIEmbeddings(model= "text-embedding-3-small")
+        ### 哲学科
+        - 哲学科は、西洋の哲学、倫理学、宗教などの歴史、思想、意義について、古典の講読、精神史の研究及び現代の諸
+        問題の批判的検討・討論をとおして、基礎的な教養を土台にして、世界と人間の意味を根本的原則的に考えぬく力や
+        正しく行動する力、さらに社会の問題を的確に把握分析する力を身につけて、教育、文化、メディアをはじめ、公共
+        機関や国際機関など、さらに広く産業界全体において活躍する人物を養成することを目的とする。
 
-# chroma db呼び出し
-persist_directory = "./docs/chroma"
-db = Chroma(collection_name="langchain_store", persist_directory=persist_directory, embedding_function=embedding)
+        ### 英文学科
+        - 英文学科は、主として英米文学・英米文化、英語学・英語教育、およびこれらの関連分野における広範な基礎知識、
+        多彩な学際的思考力・表現力、高度な領域的専門性を備えたグローバル人材の養成を目的としている。その学究過程
+        で、グローバル社会に通用する実践的英語運用能力、複雑化・多様化する状況を正確に判断し、適切に対応しうる分
+        析能力、問題解決能力、精緻な言語表現能力、さらに異文化理解に対する鋭敏な感性と柔軟な汎用的思考力を身につ
+        け、広範な視野と責任ある信条に裏打ちされた主体的かつ協調的行動によって、国内外において広く社会貢献できる
+        人物を養成することを目的とする。
 
-# 定数定義
-USER_NAME = "user"
-ASSISTANT_NAME = "assistant"
+        ### 美学芸術学科
+        - 美学芸術学科は、美学・芸術学・芸術史（美術史）の三領域について、美や芸術の本質や多様性、様々な芸術ジャ
+        ンルの原理、及び作品の歴史を総合的に学ぶことをとおして、今日的な問題にも対処しうる、柔軟な思考力と磨き抜
+        かれた感性と豊かな表現力を身につけることによって、マスコミ、出版、広告、画廊、官公庁等において、さらには
+        大学院を経て美術館や博物館、大学等において活躍しうる人物を養成することを目的とする。
 
-# 質問文
-query = st.chat_input('やりたいことを入力')
+        ### 文化史学科
+        - 文化史学科は、日本や世界の歴史について、政治・経済・社会・宗教・芸術・日常生活・心性など人間活動の総体
+        を有機的に把握する文化史的研究をとおして、幅広い歴史的知識や思考能力を身につけて、社会の諸分野において活
+        躍する人物を養成することを目的とする。
+        """
+    )
 
-# チャットログセッションの初期化
-if "chat_log" not in st.session_state:
-    st.session_state.chat_log = []
-
-if query:
-    docs = get_as_retriever_answer(query, db)
-    answer = docs["result"]
-    source_documents = docs["source_documents"]
-
-    # ログの表示
-    for chat in st.session_state.chat_log:
-        with st.chat_message(chat["name"]):
-            st.write(chat["msg"])
-
-    # chat表示
-    with st.chat_message(USER_NAME):
-        st.write(query)
-
-    with st.chat_message(ASSISTANT_NAME):
-        st.write(answer)
-        st.write("### おすすめの授業")
-        st.write(f"- [{source_documents[0].metadata['title']}]({source_documents[0].metadata['url']})")
-        st.write(f"- [{source_documents[1].metadata['title']}]({source_documents[1].metadata['url']})")
-        st.write(f"- [{source_documents[2].metadata['title']}]({source_documents[2].metadata['url']})")
-        st.write(f"- [{source_documents[3].metadata['title']}]({source_documents[3].metadata['url']})")
-        st.write()
-
-    # data表示
-    with st.expander('docs', expanded=False):
-        st.write(docs)
-
-    # セッションにログを追加
-    st.session_state.chat_log.append({"name" : USER_NAME, "msg" : query})
-    st.session_state.chat_log.append({"name" : ASSISTANT_NAME, "msg" : answer})
+if __name__ == '__main__':
+    init_page()
